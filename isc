@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Define the script directory
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+# List of available packages
+LIST="dotnet
+postgres
+go
+nginx"
+
+function list_packages() {
+    echo "$LIST"
+}
+
+function setup_package() {
+    PACKAGE=$1
+    case $PACKAGE in
+        dotnet)
+            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_dotnet.sh"
+            ;;
+        postgres)
+            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_postgres.sh"
+            ;;
+        go)
+            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_go.sh"
+            ;;
+        nginx)
+            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_nginx.sh"
+            ;;
+        *)
+            echo "Unknown package: $PACKAGE"
+            echo "Usage: isc --setup <package>"
+            exit 1
+            ;;
+    esac
+
+    if [ -x "$SCRIPT_PATH" ]; then
+        "$SCRIPT_PATH"
+    else
+        echo "Setup script not found or not executable: $SCRIPT_PATH"
+        exit 1
+    fi
+}
+
+function show_help() {
+    echo "Usage: isc [option] [package]"
+    echo ""
+    echo "Options:"
+    echo "  --list            List all available packages"
+    echo "  --setup <package> Set up the specified package"
+    echo "  --help            Display this help message"
+    echo "  --update          Update the scripts"
+}
+
+case $1 in
+    --list)
+        list_packages
+        ;;
+    --setup)
+        if [ -z "$2" ]; then
+            echo "Usage: isc --setup <package>"
+            exit 1
+        fi
+        setup_package "$2"
+        ;;
+    --help)
+        show_help
+        ;;
+    --update)
+        if [ -x "$SCRIPT_DIR/update.sh" ]; then
+            "$SCRIPT_DIR/update.sh"
+        else
+            echo "Update script not found or not executable: $SCRIPT_DIR/update.sh"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Invalid option: $1"
+        show_help
+        exit 1
+        ;;
+esac
