@@ -3,11 +3,20 @@
 # Define the script directory
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
+# Detect distribution
+detect_distro() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "$ID"
+    else
+        echo "unknown"
+    fi
+}
+
 # List of available packages
 LIST="dotnet
 postgres
-go
-nginx"
+"
 
 function list_packages() {
     echo "$LIST"
@@ -15,18 +24,31 @@ function list_packages() {
 
 function setup_package() {
     PACKAGE=$1
+    DISTRO=$(detect_distro)
+    
     case $PACKAGE in
         dotnet)
-            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_dotnet.sh"
+            "$SCRIPT_DIR/scripts/setup_dotnet.sh"
             ;;
         postgres)
-            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_postgres.sh"
+            case $DISTRO in
+                arch)
+                    "$SCRIPT_DIR/arch/setup_postgres.sh"
+                    ;;
+                ubuntu|debian)
+                    "$SCRIPT_DIR/ubuntu/setup_postgres.sh"
+                    ;;
+                *)
+                    echo "Unsupported distribution: $DISTRO"
+                    exit 1
+                    ;;
+            esac
             ;;
         go)
-            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_go.sh"
+            # Example for Go, add distribution-specific handling as needed
             ;;
         nginx)
-            SCRIPT_PATH="$SCRIPT_DIR/scripts/setup_nginx.sh"
+            # Example for Nginx, add distribution-specific handling as needed
             ;;
         *)
             echo "Unknown package: $PACKAGE"
@@ -34,13 +56,6 @@ function setup_package() {
             exit 1
             ;;
     esac
-
-    if [ -x "$SCRIPT_PATH" ]; then
-        "$SCRIPT_PATH"
-    else
-        echo "Setup script not found or not executable: $SCRIPT_PATH"
-        exit 1
-    fi
 }
 
 function show_help() {
@@ -50,7 +65,7 @@ function show_help() {
     echo "  --list            List all available packages"
     echo "  --setup <package> Set up the specified package"
     echo "  --help            Display this help message"
-    echo "  --update          Update the scripts"
+    echo "  --update          Update the isc script"
 }
 
 case $1 in
@@ -62,7 +77,7 @@ case $1 in
             echo "Usage: isc --setup <package>"
             exit 1
         fi
-        setup_package "$2"
+        setup_package $2
         ;;
     --help)
         show_help
@@ -71,7 +86,7 @@ case $1 in
         if [ -x "$SCRIPT_DIR/update.sh" ]; then
             "$SCRIPT_DIR/update.sh"
         else
-            echo "Update script not found or not executable: $SCRIPT_DIR/update.sh"
+            echo "Update script not found or not executable."
             exit 1
         fi
         ;;

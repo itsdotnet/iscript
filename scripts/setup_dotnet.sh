@@ -1,12 +1,40 @@
 #!/bin/bash
 
+# Define the installation script URL and local file
+INSTALL_SCRIPT_URL="https://dot.net/v1/dotnet-install.sh"
+INSTALL_SCRIPT="dotnet-install.sh"
+DOTNET_DIR="$HOME/.dotnet"
+
+# Check if .NET is already installed
+if [ -d "$DOTNET_DIR" ]; then
+    echo ".NET is already installed at $DOTNET_DIR"
+    echo "Skipping installation."
+    exit 0
+fi
+
+# Download the .NET install script
+echo "Downloading .NET install script..."
+wget "$INSTALL_SCRIPT_URL" -O "$INSTALL_SCRIPT"
+if [ $? -ne 0 ]; then
+    echo "Failed to download $INSTALL_SCRIPT. Exiting."
+    exit 1
+fi
+
+# Make the downloaded script executable
+chmod +x "$INSTALL_SCRIPT"
+if [ $? -ne 0 ]; then
+    echo "Failed to make $INSTALL_SCRIPT executable. Exiting."
+    exit 1
+fi
+
 # Function to prompt for .NET version
 prompt_version() {
     echo "Choose .NET version to install:"
     echo "1) 6"
     echo "2) 7"
     echo "3) 8"
-    read -p "Enter your choice (1, 2, 3): " CHOICE
+    echo "4) Latest (LTS)"
+    read -p "Enter your choice (1, 2, 3, 4): " CHOICE
 
     case $CHOICE in
         1)
@@ -17,6 +45,9 @@ prompt_version() {
             ;;
         3)
             CHANNEL="8.0"
+            ;;
+        4)
+            CHANNEL="LTS"
             ;;
         *)
             echo "Invalid choice. Exiting."
@@ -41,11 +72,37 @@ else
     echo "Selected .NET version: $CHANNEL"
 fi
 
+# Install .NET
 echo "Setting up .NET version $CHANNEL..."
-# Commands to set up the specified .NET version
-# Example commands (adjust as needed):
-# wget https://download.visualstudio.microsoft.com/download/pr/<url_to_dotnet_version>/dotnet-sdk-$CHANNEL-linux-x64.tar.gz
-# tar -xzvf dotnet-sdk-$CHANNEL-linux-x64.tar.gz
-# sudo mv dotnet /usr/local/bin/
+./"$INSTALL_SCRIPT" --channel "$CHANNEL"
+if [ $? -ne 0 ]; then
+    echo "Failed to install .NET. Exiting."
+    exit 1
+fi
 
-# Replace the above commands with actual setup steps for the specified version.
+# Clean up install script
+rm -f "$INSTALL_SCRIPT"
+
+# Add .NET to PATH in the appropriate shell profile
+PROFILE=""
+if [ -f "$HOME/.bashrc" ]; then
+    PROFILE="$HOME/.bashrc"
+elif [ -f "$HOME/.zshrc" ]; then
+    PROFILE="$HOME/.zshrc"
+else
+    echo "No suitable shell profile found. Please add the PATH manually."
+    exit 1
+fi
+
+# Add .NET paths to the profile
+if ! grep -q "export DOTNET_ROOT=$DOTNET_DIR" "$PROFILE"; then
+    echo "export DOTNET_ROOT=$DOTNET_DIR" >> "$PROFILE"
+fi
+
+if ! grep -q "export PATH=\$PATH:$DOTNET_DIR:$DOTNET_DIR/tools" "$PROFILE"; then
+    echo "export PATH=\$PATH:$DOTNET_DIR:$DOTNET_DIR/tools" >> "$PROFILE"
+fi
+
+source "$PROFILE"
+
+echo "Setup completed successfully."
