@@ -1,3 +1,22 @@
+# OS-specific files
+.DS_Store
+*.swp
+*.swo
+
+# Build directories
+build/
+dist/
+*.log
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Environment files
+.env
+
 *.tar
 *.tar.*
 *.jar
