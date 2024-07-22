@@ -24,7 +24,7 @@ prompt_password
 echo "Updating package database and installing PostgreSQL..."
 sudo pacman -Syu --noconfirm postgresql
 
-# Initialize the PostgreSQL database
+# Initialize the PostgreSQL database        
 echo "Initializing PostgreSQL database..."
 sudo su -c "postgres-initdb -D /var/lib/postgres/data"
 

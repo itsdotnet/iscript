@@ -98,7 +98,7 @@ PROFILE=""
 if [ -f "$HOME/.bashrc" ]; then
     PROFILE="$HOME/.bashrc"
 elif [ -f "$HOME/.zshrc" ]; then
-    PROFILE="$HOME/.zshrc"
+    PROFILE="$HOME/.zshrc"  
 else
     echo "No suitable shell profile found. Please add the PATH manually."
     exit 1
