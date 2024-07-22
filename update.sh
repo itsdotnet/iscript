@@ -3,7 +3,7 @@
 # Determine the directory of the update.sh script
 REPO_DIR="$(dirname "$(realpath "$0")")"
 
-# Define variables
+# Define variables      
 SCRIPT_NAME=isc
 DESTINATION=/usr/local/bin/$SCRIPT_NAME
 
