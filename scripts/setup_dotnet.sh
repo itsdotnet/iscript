@@ -5,28 +5,6 @@ INSTALL_SCRIPT_URL="https://dot.net/v1/dotnet-install.sh"
 INSTALL_SCRIPT="dotnet-install.sh"
 DOTNET_DIR="$HOME/.dotnet"
 
-# Check if .NET is already installed
-if [ -d "$DOTNET_DIR" ]; then
-    echo ".NET is already installed at $DOTNET_DIR"
-    echo "Skipping installation."
-    exit 0
-fi
-
-# Download the .NET install script
-echo "Downloading .NET install script..."
-wget "$INSTALL_SCRIPT_URL" -O "$INSTALL_SCRIPT"
-if [ $? -ne 0 ]; then
-    echo "Failed to download $INSTALL_SCRIPT. Exiting."
-    exit 1
-fi
-
-# Make the downloaded script executable
-chmod +x "$INSTALL_SCRIPT"
-if [ $? -ne 0 ]; then
-    echo "Failed to make $INSTALL_SCRIPT executable. Exiting."
-    exit 1
-fi
-
 # Function to prompt for .NET version
 prompt_version() {
     echo "Choose .NET version to install:"
@@ -72,6 +50,38 @@ else
     echo "Selected .NET version: $CHANNEL"
 fi
 
+# Check for existing .NET installations
+INSTALLED_VERSIONS=$(ls "$DOTNET_DIR" | grep -E "^sdk/([0-9]+\\.[0-9]+)")
+
+# Handle existing installations
+if [ -n "$INSTALLED_VERSIONS" ]; then
+    echo "Existing .NET versions found:"
+    echo "$INSTALLED_VERSIONS"
+    echo "You are about to install version $CHANNEL."
+    read -p "Do you want to proceed? (y/N): " PROCEED
+    if [[ "$PROCEED" =~ ^[Yy]$ ]]; then
+        echo "Proceeding with installation..."
+    else
+        echo "Installation aborted."
+        exit 0
+    fi
+fi
+
+# Download the .NET install script
+echo "Downloading .NET install script..."
+wget "$INSTALL_SCRIPT_URL" -O "$INSTALL_SCRIPT"
+if [ $? -ne 0 ]; then
+    echo "Failed to download $INSTALL_SCRIPT. Exiting."
+    exit 1
+fi
+
+# Make the downloaded script executable
+chmod +x "$INSTALL_SCRIPT"
+if [ $? -ne 0 ]; then
+    echo "Failed to make $INSTALL_SCRIPT executable. Exiting."
+    exit 1
+fi
+
 # Install .NET
 echo "Setting up .NET version $CHANNEL..."
 ./"$INSTALL_SCRIPT" --channel "$CHANNEL"
@@ -103,6 +113,6 @@ if ! grep -q "export PATH=\$PATH:$DOTNET_DIR:$DOTNET_DIR/tools" "$PROFILE"; then
     echo "export PATH=\$PATH:$DOTNET_DIR:$DOTNET_DIR/tools" >> "$PROFILE"
 fi
 
-source "$PROFILE"
+echo "PATH updated in $PROFILE. Please restart your terminal or run 'source $PROFILE' to apply changes."
 
 echo "Setup completed successfully."
