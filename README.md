@@ -42,7 +42,7 @@ isc --help
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/iscript.git
+git clone https://github.com/itsdotnet/iscript.git
 cd iscript
 ```
 
