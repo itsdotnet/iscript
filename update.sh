@@ -15,7 +15,7 @@ echo "Pulling the latest changes from the repository..."
 cd "$REPO_DIR" || { echo "Failed to navigate to repository directory. Exiting."; exit 1; }
 git pull origin main || { echo "Failed to pull from repository. Exiting."; exit 1; }
 
-# Make the script executable
+# Make the script executable    
 chmod +x "$REPO_DIR/$SCRIPT_NAME"
 
 # Ensure the old `isc` in the PATH is not being used
