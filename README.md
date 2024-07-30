@@ -53,7 +53,13 @@ chmod +x start.sh
 ./start.sh
 ```
 
-3. Follow the on-screen instructions to complete the setup.
+3. Reload your terminal profile it maybe `.zshrc`, `bashrc`, `.bash_profile` etc:
+
+```bash
+source ~/.bashrc
+```
+
+4. Follow the on-screen instructions to complete the setup.
 
 ## Contributing
 
